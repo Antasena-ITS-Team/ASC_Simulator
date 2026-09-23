@@ -1,5 +1,6 @@
-# Answer key: instructors only, keep out of the public repo
+# Instructor-only files, keep out of the public repo
 analysis_solution.ipynb
+publisher.py
 
 # Data recorded by course takers
 attempt_*.csv

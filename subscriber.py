@@ -8,6 +8,7 @@ data analysis and efficiency calculation part of the course.
 Usage:
     python subscriber.py
     python subscriber.py --out my_received_data.csv
+    python subscriber.py --print-every 50     # quieter output, still saves every message
 """
 
 import argparse
@@ -22,18 +23,20 @@ PORT = 1883
 TOPIC = "antasena/course/telemetry"
 
 
-def on_connect(client, userdata, flags, rc):
-    if rc == 0:
+def on_connect(client, userdata, flags, reason_code, properties):
+    if not reason_code.is_failure:
         print("Connected to MQTT broker!")
         client.subscribe(userdata["topic"], qos=1)
         print(f"Subscribed to topic: {userdata['topic']}")
     else:
-        print(f"Failed to connect, return code {rc}")
+        print(f"Failed to connect: {reason_code}")
 
 
 def on_message(client, userdata, msg):
     payload = msg.payload.decode("utf-8")
-    print(f"Received: {payload}")
+    userdata["count"] += 1
+    if userdata["count"] % userdata["print_every"] == 0:
+        print(f"Received #{userdata['count']}: {payload}")
 
     try:
         data = json.loads(payload)
@@ -67,11 +70,14 @@ def main():
     ap.add_argument("--topic", default=TOPIC, help=f"MQTT topic (default: {TOPIC})")
     ap.add_argument("--out", default="received_telemetry.csv",
                     help="CSV file to save incoming telemetry to (default: received_telemetry.csv)")
+    ap.add_argument("--print-every", type=int, default=1,
+                    help="only print every Nth message; all messages are still saved (default: 1)")
     args = ap.parse_args()
 
     client = mqtt.Client(
-        mqtt.CallbackAPIVersion.VERSION1,
-        userdata={"topic": args.topic, "out_path": args.out},
+        mqtt.CallbackAPIVersion.VERSION2,
+        userdata={"topic": args.topic, "out_path": args.out,
+                  "print_every": max(1, args.print_every), "count": 0},
     )
     client.on_connect = on_connect
     client.on_message = on_message
