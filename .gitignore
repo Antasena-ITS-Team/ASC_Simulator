@@ -1,0 +1,8 @@
+# Answer key: instructors only, keep out of the public repo
+analysis_solution.ipynb
+
+# Data recorded by course takers
+attempt_*.csv
+
+.ipynb_checkpoints/
+__pycache__/
