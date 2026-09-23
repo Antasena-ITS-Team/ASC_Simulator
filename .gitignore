@@ -1,5 +1,6 @@
 # Instructor-only files, keep out of the public repo
 analysis_solution.ipynb
+rekam_data_solution.ipynb
 publisher.py
 
 # Data recorded by course takers
