@@ -1,0 +1,106 @@
+# Antasena Super Course — Perbandingan Efisiensi (KUNCI JAWABAN)
+
+Versi lengkap dari `EDA_ASC.ipynb`: semua grafik sudah ditampilkan dan pertanyaan di Langkah 5 sudah dijawab. **Instruktur:** gunakan notebook ini untuk memeriksa pekerjaan peserta.
+
+## Persiapan (khusus Google Colab)
+
+Jika kamu membuka notebook ini di **Google Colab**, jalankan sel di bawah terlebih dahulu. Sel ini mengunduh kedua file data CSV dari folder `data/` di repo kursus. Di Jupyter lokal, sel ini tidak melakukan apa-apa.
+
+## Konfigurasi
+
+Setiap baris berisi `(path_csv, label)`.
+
+## Langkah 1 — Memuat data dan menghitung besaran turunan
+
+- `speed_ms` — jika file menyimpan `speed_kmh`, ubah satuannya (**1 m/s = 3,6 km/jam**)
+- `power_W = voltage_V × current_A` (daya = tegangan × arus)
+- `dt_s` — selang waktu antar baris (`.diff()`)
+- `energy_Wh` — jumlah kumulatif `power_W × dt_s`, diubah dari joule (W·s) ke Wh (**1 Wh = 3600 J**)
+- `efficiency_km_per_kWh = distance_m / energy_Wh` — kebetulan m/Wh dan km/kWh bernilai sama
+
+**Cek kewajaran:** *nama* kolom belum tentu menjamin *satuannya*. `check_speed_units` membandingkan kolom kecepatan dengan kecepatan yang dihitung dari `distance_m` dan `time_s`. Jika keduanya berbeda 3,6 kali, berarti kolom itu sebenarnya dalam km/jam.
+
+## Langkah 2 — Sinyal mentah terhadap waktu
+
+`plot_over_time(column, ylabel, title)` menggambar satu garis untuk setiap percobaan.
+
+## Langkah 3 — Daya dan energi
+
+Pada grafik energi terhadap jarak, **garis yang lebih landai = jarak per Wh lebih jauh = lebih efisien.**
+
+## Langkah 4 — Perbandingan efisiensi
+
+Efisiensi kumulatif masih naik-turun di awal (karena dibagi energi yang masih sangat kecil) lalu stabil seiring berjalannya balapan. Bandingkan nilai **akhirnya**.
+
+### Ringkasan per lap
+
+Untuk setiap lap: jarak tempuh = `distance_m` terakhir − pertama; begitu juga untuk `energy_Wh`.
+
+## Langkah 5 — Mengapa efisiensinya berbeda?
+
+Tabel di bawah mengumpulkan angka-angka yang kamu perlukan untuk menjawab pertanyaan.
+
+### P1. Percobaan mana yang efisiensinya lebih tinggi, dan kira-kira berapa persen selisihnya?
+
+**Jawaban:** **105V / 9A lebih unggul: ≈ 64,0 km/kWh vs ≈ 58,7 km/kWh, sekitar 9% lebih efisien.** Kedua percobaan menempuh jarak yang sama (~11,03 km), tetapi 105V hanya memakai ~172 Wh sedangkan 80V ~188 Wh. Grafik per lap menunjukkan selisih ini konsisten di setiap lap (≈ 64 vs ≈ 59), jadi ini perbedaan yang nyata, bukan karena satu lap yang buruk.
+
+### P2. Bandingkan `avg_current_A` antar percobaan. Rugi-rugi listrik sebanding dengan **kuadrat arus** (`P_rugi ≈ I² × R`). Bagaimana hal ini bisa menjelaskan sebagian perbedaannya?
+
+**Jawaban:** Rata-rata arus **≈ 2,9 A (105V) vs ≈ 5,4 A (80V)**, hampir 2 kali lipat, dan rata-rata *I²* **≈ 11 vs ≈ 39 A²**, sekitar 3,4 kali. Rugi-rugi pada kabel, lilitan motor, dan kontroler sebanding dengan I², jadi dengan hambatan yang sama percobaan 80V membuang sekitar 3,4 kali lebih banyak energi sebagai panas. Tegangan yang lebih rendah ditambah kebutuhan daya yang lebih besar memaksa arus lebih tinggi untuk setiap watt yang disalurkan. Itulah sebabnya sistem bertegangan tinggi lebih efisien. *Namun* Langkah 6 menunjukkan bahwa dengan hambatan yang realistis, I²R hanya menjelaskan sebagian kecil dari total selisih. Sebagian besar berasal dari kecepatan yang lebih tinggi.
+
+### P3. Apakah percobaan yang lebih efisien juga mencapai kecepatan puncak lebih tinggi? Apa artinya bagi tarik-ulur antara kecepatan dan efisiensi?
+
+**Jawaban:** **Tidak. Percobaan yang efisien justru yang lebih lambat.** 105V rata-rata ≈ 5,4 m/s (≈ 19,5 km/jam, puncak ≈ 7,9 m/s); 80V rata-rata ≈ 7,1 m/s (≈ 25,4 km/jam, puncak ≈ 9,0 m/s) dan finis ~475 s lebih cepat. Gaya hambat aerodinamis naik sebanding dengan v², jadi melaju lebih cepat membutuhkan energi lebih besar per meter. Kecepatan dan efisiensi saling tarik-ulur: percobaan 80V mendapat waktu lap lebih cepat dengan harga Wh per km yang lebih besar.
+
+⚠️ *Catatan:* satuan sangat penting di sini. Jika kecepatan 105V (tersimpan dalam km/jam) dibaca sebagai m/s, seolah-olah percobaan 105V mencapai 28 m/s (100 km/jam) dan menjadi yang *lebih cepat*, yang merupakan kesimpulan yang salah. Cek satuan di Langkah 1 melindungi dari kolom kecepatan yang salah label.
+
+### P4. Lihat grafik arus terhadap kecepatan: pada kecepatan yang mirip, apakah salah satu percobaan menarik arus jauh lebih besar? Apa penyebabnya (rasio gir, ukuran motor, hambatan aerodinamis, gaya mengemudi)?
+
+**Jawaban:** Kedua percobaan hampir tidak memiliki kecepatan jelajah yang sama (105V melaju di ~5–6 m/s, 80V di ~7–8 m/s), jadi perbandingan langsung terbatas. Di rentang yang sama (~5–6 m/s), percobaan 80V menarik ~9–10 A vs ~3 A untuk 105V, tetapi pada kecepatan itu mobil 80V sebagian besar masih *berakselerasi*, sehingga arusnya membesar. Perbedaan pada kecepatan yang sama berasal dari: **gaya mengemudi** (akselerasi lebih agresif → lonjakan arus), **tegangan lebih rendah** (butuh ampere lebih besar untuk daya yang sama), **rasio gir/titik kerja motor** (motor bisa bekerja di luar titik efisiensi terbaiknya), dan pada kecepatan jelajah yang lebih tinggi, **hambatan aerodinamis tambahan**. Perhatikan juga bahwa percobaan 105V sering berada di ~0 A sambil tetap melaju. Itu artinya mobil sedang meluncur (coasting), strategi yang sangat efisien.
+
+## Langkah 6 — Lanjutan: apa di balik angka-angka ini
+
+Grafik di atas menunjukkan *bahwa* 105V / 9A lebih efisien. Grafik di bawah menunjukkan *mengapa*: di bagian lintasan mana energi tambahan terpakai, bagaimana setiap percobaan dikemudikan, dan seberapa besar selisih yang masuk akal dijelaskan oleh setiap penyebab fisik.
+
+Bagian ini mengasumsikan tepat dua percobaan: entri pertama di `ATTEMPTS` adalah acuan (baseline) dan entri kedua dibandingkan terhadapnya.
+
+### 6.1 Satu lap, posisi demi posisi
+
+Setiap lap menempuh lintasan yang sama sepanjang ~3.675 m, jadi semua lap bisa disejajarkan berdasarkan **posisi dalam lap** lalu dirata-ratakan. Cara ini memisahkan *pengaruh lintasan* (tanjakan dan tikungan selalu berada di tempat yang sama setiap lap) dari *pengaruh pengemudi*. Pita berarsir menandai bagian di mana kedua percobaan paling berbeda (lihat 6.2).
+
+**Cara membacanya:**
+
+- **Kecepatan:** kedua percobaan mempertahankan kecepatan jelajah yang hampir konstan (~5,4 m/s vs ~7,1 m/s). Lonjakan di sekitar 3.000 m adalah turunan: kedua mobil bertambah cepat dengan arus 0 A, artinya meluncur tanpa biaya energi.
+- **Arus:** kedua percobaan naik-turun di *posisi yang sama*, jadi bentuknya ditentukan oleh lintasan. Percobaan 80V selalu lebih tinggi, sering hampir 2 kali lipat.
+- **Energi per km:** di puncak tertinggi (tanjakan, mis. ~300 m, ~600 m, ~2.150 m) kedua garis hampir berimpit, karena mengangkat mobil menanjak butuh energi yang sama berapa pun kecepatannya. Kedua garis terpisah di **bagian panjang dengan beban terus-menerus (berarsir)**, tempat mobil lama melaju di kecepatan jelajah dan mobil yang lebih cepat membayar hambatan udara lebih besar.
+
+### 6.2 Di mana selisih energi terkumpul?
+
+Atas: energi tambahan yang sudah dipakai percobaan 80V sampai titik tersebut dalam balapan. Bawah: selisih yang sama dipecah per 100 m dalam lap (dirata-ratakan antar lap). Batang oranye menandai bagian di mana percobaan 80V memakai energi lebih banyak, dan batang biru di mana 105V yang lebih banyak.
+
+**Cara membacanya:** selisih kumulatif naik dengan **pola yang sama di setiap lap**: curam di paruh pertama lap dan landai di sisanya. Jadi selisih ini bukan karena start yang buruk atau satu kesalahan, melainkan karena cara mobil dikemudikan di bagian lintasan yang sama setiap lap. Grafik batang menunjukkan biaya tambahan sebagian besar ada di bagian tengah lap yang panjang, tempat mobil mempertahankan kecepatan di bawah beban. Satu-satunya batang biru (~2.150 m) adalah tanjakan curam: mobil 80V yang lebih cepat datang dengan momentum lebih besar dan terbawa sebagian ke atas bukit, sedangkan mobil 105V yang lebih lambat harus menarik arus lebih besar di sana.
+
+### 6.3 Bagaimana setiap percobaan dikemudikan
+
+Distribusi berbobot waktu: berapa persen waktu balapan yang dihabiskan di setiap kecepatan dan setiap nilai arus.
+
+**Cara membacanya:** kedua pengemudi menjaga kecepatan jelajah yang stabil. Tidak ada yang mengemudi secara tidak menentu, jadi kehalusan mengemudi bukan pembedanya. Pembedanya adalah **kecepatan yang dipilih**: percobaan 80V melaju ~1,7 m/s lebih cepat. Hal ini menggeser seluruh distribusi arusnya ke kanan, dengan banyak waktu di atas 7 A, nilai yang hampir tidak pernah dicapai percobaan 105V. Percobaan 105V juga lebih sering meluncur di 0 A.
+
+### 6.4 Seberapa besar rugi-rugi I²R bisa menjelaskan?
+
+Rugi-rugi resistif adalah `E_rugi = R × ∫I² dt`. Kita tahu `∫I² dt` setiap percobaan dari data, tetapi tidak tahu total hambatan `R` dari baterai, kabel, kontroler, dan lilitan motor. Karena itu grafik ini menanyakan, untuk setiap kemungkinan nilai R, **berapa bagian dari total selisih energi yang bisa dijelaskan oleh rugi-rugi resistif**. Sistem nyata seukuran ini biasanya berada di sekitar 0,05–0,3 Ω (berarsir).
+
+**Cara membacanya:** percobaan 80V mengumpulkan `∫I² dt` ~2,6 kali lebih besar, jadi memang kehilangan lebih banyak energi sebagai panas. Namun dengan hambatan yang realistis, hal itu hanya menjelaskan sekitar **3–20% dari selisih**. Untuk menjelaskan seluruhnya, sistem harus memiliki hambatan ~1,5 Ω, yang akan membuat mobil terasa panas dan lamban. **Jadi sebagian besar selisih berasal dari beban mekanis: hambatan aerodinamis naik sebanding v², dan percobaan 80V ~30% lebih cepat.** I²R ikut menambah, tetapi bukan penyebab utamanya.
+
+### 6.5 Ringkasan: setiap faktor relatif terhadap acuan
+
+Setiap batang menunjukkan nilai percobaan pembanding dibagi nilai acuan (1,0 = sama).
+
+**Cerita lengkapnya:**
+
+1. Percobaan 80V memilih melaju **~30% lebih cepat**. Daya hambat udara sebanding dengan kuadrat kecepatan, jadi beban yang bergantung pada kecepatan ~1,7 kali lebih besar.
+2. Menyalurkan daya lebih besar dari **tegangan ~24% lebih rendah** berarti arus jauh lebih besar (~1,9 kali), dan pemanasan resistif naik sebanding I², sehingga **rugi panas per km ~2,6 kali lebih besar**.
+3. Tanjakan membebani kedua percobaan sama besar, dan tanjakan menyumbang porsi besar dari total energi. Karena itu pengali-pengali besar tadi menyusut menjadi hanya **~9% lebih banyak energi per km** secara keseluruhan.
+
+**Pelajaran untuk lomba hemat energi:** kurangi kecepatan dan melaju stabil, meluncurlah di turunan, dan gunakan tegangan setinggi mungkin agar daya yang sama mengalir dengan arus yang lebih kecil.
+
