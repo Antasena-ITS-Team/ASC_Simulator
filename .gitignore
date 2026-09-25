@@ -1,5 +1,4 @@
 # Instructor-only files, keep out of the public repo
-EDA_ASC_solution.ipynb
 MQTT_ASC_solution.ipynb
 publisher.py
 
