@@ -1,5 +1,4 @@
-# Instructor-only files, keep out of the public repo
-publisher.py
+
 
 # Data recorded by course takers
 attempt_*.csv
